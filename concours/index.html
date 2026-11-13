@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Grand Concours de l'Immo</title>
+<style>
+:root{
+  --bg1:#071A2B; --bg2:#0B2E44; --teal:#0F766E; --teal2:#14B8A6; --amber:#F59E0B;
+  --green:#16A34A; --red:#DC2626; --ink:#F8FAFC; --muted:#94A3B8; --card:#0F2A40; --line:#1E4060;
+  --t0:#E11D48; --t1:#F59E0B; --t2:#0EA5A4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:radial-gradient(ellipse at top,#12406A 0%,var(--bg2) 35%,var(--bg1) 100%);min-height:100vh}
+button{font-family:inherit}
+#app{max-width:1400px;margin:0 auto;padding:18px 22px 40px}
+.logo{font-weight:900;letter-spacing:.06em;text-transform:uppercase;font-size:15px;color:var(--amber)}
+h1.big{font-size:clamp(30px,4vw,54px);margin:6px 0 4px;font-weight:900;text-shadow:0 4px 20px rgba(0,0,0,.4)}
+.sub{color:var(--muted);font-size:17px}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #0A4F4A;transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0A4F4A}
+.btn:disabled{background:#475569;box-shadow:none;cursor:not-allowed}
+.btn.amb{background:var(--amber);color:#1F1300;box-shadow:0 4px 0 #A16207}
+.btn.red{background:var(--red);box-shadow:0 4px 0 #7F1D1D}
+.btn.grn{background:var(--green);box-shadow:0 4px 0 #14532D}
+.btn.ghost{background:transparent;border:2px solid var(--line);box-shadow:none;color:var(--ink)}
+.btn.sm{padding:7px 12px;font-size:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.card{background:rgba(15,42,64,.85);border:1px solid var(--line);border-radius:18px;padding:20px 22px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+input,select{font-family:inherit;font-size:18px;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:#0A2236;color:var(--ink);width:100%}
+label.l{display:block;font-weight:700;margin:12px 0 6px;color:#CBD5E1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.center{text-align:center}
+.mt{margin-top:18px}
+.hide{display:none!important}
+.small{font-size:14px;color:var(--muted)}
+code,pre{background:#04121F;border-radius:8px;padding:2px 6px;color:#A7F3D0;font-size:13px}
+pre{padding:12px;overflow:auto;white-space:pre-wrap}
+/* layout central */
+.cwrap{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.scoreboard .team{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:14px;margin:10px 0;font-weight:800;font-size:20px;border:3px solid transparent}
+.scoreboard .team .pts{font-size:28px}
+.tc0{background:linear-gradient(90deg,rgba(225,29,72,.35),rgba(225,29,72,.12));border-color:var(--t0)!important}
+.tc1{background:linear-gradient(90deg,rgba(245,158,11,.35),rgba(245,158,11,.12));border-color:var(--t1)!important}
+.tc2{background:linear-gradient(90deg,rgba(14,165,164,.35),rgba(14,165,164,.12));border-color:var(--t2)!important}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#475569;margin-right:8px}
+.dot.on{background:#22C55E;box-shadow:0 0 10px #22C55E}
+.games{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.gtile{background:linear-gradient(160deg,#13405F,#0B2A40);border:2px solid var(--line);border-radius:18px;padding:18px;cursor:pointer;position:relative;min-height:170px;transition:transform .15s,border-color .15s}
+.gtile:hover{transform:translateY(-4px);border-color:var(--amber)}
+.gtile .ic{font-size:40px}
+.gtile h3{margin:6px 0 2px;font-size:22px}
+.gtile .insp{color:var(--amber);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.gtile .meta{color:var(--muted);font-size:14px;margin-top:6px}
+.gtile.done:after{content:"✓ JOUÉ";position:absolute;top:12px;right:12px;background:var(--green);font-weight:800;font-size:12px;padding:3px 9px;border-radius:999px}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.qnum{font-weight:800;color:var(--amber);font-size:18px;text-transform:uppercase;letter-spacing:.05em}
+.qtext{font-size:clamp(24px,2.7vw,38px);font-weight:800;line-height:1.25;margin:14px 0 18px}
+.timer{position:relative;width:110px;height:110px;flex:0 0 110px}
+.timer svg{transform:rotate(-90deg)}
+.timer .tv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900}
+.timer.warn .tv{color:var(--red);animation:pulse .5s infinite alternate}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:14px;padding:18px 18px;border-radius:14px;font-size:clamp(18px,1.7vw,24px);font-weight:700;color:#fff;border:0;text-align:left;cursor:pointer;min-height:80px}
+.opt .sh{flex:0 0 46px;height:46px;border-radius:10px;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;font-size:24px}
+.o0{background:#E11D48}.o1{background:#2563EB}.o2{background:#CA8A04}.o3{background:#16A34A}
+.opt.dim{opacity:.28}
+.opt.right{outline:5px solid #fff;box-shadow:0 0 25px rgba(255,255,255,.6)}
+.opt.sel{outline:5px solid #fff}
+.ansbar{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.ansbar .chip{flex:1 1 200px;padding:10px 14px;border-radius:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mask{font-family:"Courier New",monospace;font-weight:900;font-size:clamp(28px,4vw,56px);letter-spacing:.3em;text-align:center;margin:10px 0 18px;color:var(--amber);word-break:break-all}
+.res td,.res th{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:19px}
+.res th{color:var(--muted);font-size:14px;text-transform:uppercase}
+table.res{width:100%;border-collapse:collapse}
+.ok{color:#4ADE80;font-weight:800}.ko{color:#F87171;font-weight:800}
+.answer-box{background:rgba(22,163,74,.18);border:2px solid var(--green);border-radius:14px;padding:12px 16px;font-size:22px;font-weight:800;margin:12px 0}
+.triitem{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#0A2236;margin:8px 0;font-size:19px;font-weight:600}
+.triitem .bt{display:flex;gap:8px}
+.triitem .bt button{border:2px solid var(--line);background:#0F2A40;color:#fff;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:15px}
+.triitem .bt button.on{background:var(--teal);border-color:var(--teal2)}
+.buzz{width:min(360px,80vw);height:min(360px,80vw);border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#FF6B6B,#B91C1C 70%);color:#fff;font-size:56px;font-weight:900;box-shadow:0 14px 0 #7F1D1D,0 20px 40px rgba(0,0,0,.5);cursor:pointer}
+.buzz:active{transform:translateY(10px);box-shadow:0 4px 0 #7F1D1D}
+.buzz:disabled{background:#475569;box-shadow:0 8px 0 #1E293B;cursor:not-allowed;font-size:30px}
+.flash{animation:flash .8s 3}
+@keyframes flash{50%{background:rgba(245,158,11,.35)}}
+/* équipe */
+.thead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-radius:16px;margin-bottom:18px;font-weight:900;font-size:22px}
+.waiting{font-size:26px;text-align:center;color:var(--muted);padding:60px 10px}
+.verdict{font-size:42px;font-weight:900;text-align:center;padding:24px;border-radius:18px;margin:14px 0}
+.verdict.ok{background:rgba(22,163,74,.25)}.verdict.ko{background:rgba(220,38,38,.25)}.verdict.neu{background:rgba(148,163,184,.15);color:#E2E8F0}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:18px;margin:30px 0}
+.podium .p{width:220px;text-align:center;border-radius:16px 16px 0 0;padding:16px;font-weight:900;font-size:22px}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:999;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.status{position:fixed;bottom:10px;right:12px;font-size:12px;color:var(--muted);background:rgba(0,0,0,.35);padding:4px 10px;border-radius:999px}
+@media(max-width:900px){.cwrap,.grid2,.grid3,.games,.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="status" id="netStatus"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ======================================================================
+   1) CONFIGURATION — collez ici l'URL et la clé « anon public » de votre
+      projet Supabase (Supabase > Project Settings > API).
+      Si ces champs restent vides, le jeu les demandera à l'écran.
+   ====================================================================== */
+const CONFIG = {
+  // Projet Supabase « Budget » (même connexion que les jeux Stop microbes).
+  // Seul le temps réel (Realtime · Broadcast) est utilisé : aucune table nécessaire.
+  SUPABASE_URL: "https://ugrzvirjnsvtlgdmfjhg.supabase.co",
+  SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncnp2aXJqbnN2dGxnZG1mamhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNDQ2NTAsImV4cCI6MjEwMDkyMDY1MH0.fOV_snoRgmQ81308Z1k3L-8-ULfRaarA_98Z5tZIlEc"
+};
+
+/* ======================================================================
+   2) BANQUE DE QUESTIONS
+   ====================================================================== */
+const BANK = {
+qcm:[
+ {t:"Qui délivre la carte professionnelle de l'agent immobilier ?",o:["La CCI","La préfecture","La mairie","La chambre des notaires"],a:0},
+ {t:"Quelle est la durée de validité de la carte professionnelle ?",o:["3 ans","5 ans","10 ans","1 an"],a:0},
+ {t:"Quelle mention est obligatoire sur un mandat de vente ?",o:["Le numéro du registre des mandats","La signature du notaire","L'accord du syndic de copropriété","Le visa de la préfecture"],a:0},
+ {t:"Après 3 mois, un mandat exclusif peut être dénoncé avec un préavis de…",o:["15 jours","1 mois","3 mois","8 jours"],a:0},
+ {t:"Délai de rétractation de l'acquéreur non professionnel d'un logement après le compromis :",o:["10 jours","7 jours","14 jours","15 jours"],a:0},
+ {t:"Méthode d'estimation la plus utilisée pour un logement :",o:["Par comparaison","Par capitalisation","Sol + construction","Par le coût de remplacement"],a:0},
+ {t:"Quelle base publique recense les prix réels des ventes ?",o:["DVF","DPE","ERP","IRL"],a:0},
+ {t:"Quelle surface doit figurer dans l'avant-contrat de vente d'un lot de copropriété ?",o:["La surface Carrez","La surface habitable","La surface utile","La surface au sol"],a:0},
+ {t:"Durée de validité d'un DPE réalisé aujourd'hui :",o:["10 ans","5 ans","3 ans","1 an"],a:0},
+ {t:"Depuis le 1er janvier 2025, un logement ne peut plus être loué s'il est classé…",o:["G","F","E","D"],a:0},
+ {t:"En cas de soupçon de blanchiment, l'agent effectue une déclaration auprès de…",o:["TRACFIN","la DGCCRF","la CNIL","la préfecture"],a:0},
+ {t:"Montant maximal du dépôt de garantie d'un logement loué vide :",o:["1 mois de loyer hors charges","2 mois de loyer hors charges","1 mois charges comprises","3 mois de loyer hors charges"],a:0},
+ {t:"Durée minimale d'un bail vide consenti par un bailleur personne physique :",o:["3 ans","6 ans","1 an","9 ans"],a:0},
+ {t:"Délai de restitution du dépôt de garantie si l'état des lieux de sortie est conforme :",o:["1 mois","2 mois","15 jours","3 mois"],a:0},
+ {t:"Quel indice sert à réviser le loyer d'un logement ?",o:["L'IRL","L'ICC","L'ILC","L'ILAT"],a:0},
+ {t:"Quel texte fixe la liste des charges récupérables sur le locataire ?",o:["Le décret du 26 août 1987","La loi Hoguet de 1970","Le règlement de copropriété","La loi du 10 juillet 1965"],a:0},
+ {t:"Préavis du locataire d'un logement vide situé en zone tendue :",o:["1 mois","3 mois","2 mois","15 jours"],a:0},
+ {t:"Quel est le garant public et gratuit proposé par Action Logement ?",o:["Visale","La GLI","Le FSL","Le PTZ"],a:0},
+ {t:"Quelle pièce est interdite dans un dossier de candidature locative ?",o:["Un relevé de compte bancaire","Le dernier avis d'imposition","Les trois derniers bulletins de salaire","Une pièce d'identité"],a:0},
+ {t:"Plafond des honoraires d'état des lieux à la charge du locataire :",o:["3 € par m²","5 € par m²","8 € par m²","12 € par m²"],a:0},
+ {t:"Quelle loi organise le statut de la copropriété ?",o:["La loi du 10 juillet 1965","La loi du 6 juillet 1989","La loi du 2 janvier 1970","La loi du 24 mars 2014"],a:0},
+ {t:"Quel document identifie et numérote les lots de copropriété ?",o:["L'état descriptif de division","Le règlement intérieur","Le carnet d'entretien","Le procès-verbal d'AG"],a:0},
+ {t:"Délai minimal de convocation à l'assemblée générale (hors urgence) :",o:["21 jours","15 jours","30 jours","8 jours"],a:0},
+ {t:"L'approbation des comptes se vote à la majorité de l'article…",o:["24","25","26","22"],a:0},
+ {t:"Durée maximale du mandat du syndic :",o:["3 ans","1 an","5 ans","6 ans"],a:0},
+ {t:"Quel organe assiste le syndic et contrôle sa gestion ?",o:["Le conseil syndical","Le syndicat des copropriétaires","Le commissaire aux comptes","La commission de conciliation"],a:0},
+ {t:"Délai pour contester une décision d'AG (opposant ou défaillant) :",o:["2 mois","1 mois","6 mois","15 jours"],a:0},
+ {t:"Cotisation annuelle minimale au fonds de travaux (hors cas particuliers) :",o:["5 % du budget prévisionnel","2 % du budget prévisionnel","10 % du budget prévisionnel","1 % du budget prévisionnel"],a:0},
+ {t:"Les charges générales de copropriété sont réparties selon…",o:["les tantièmes généraux","l'utilité pour chaque lot","le nombre d'occupants","la surface Carrez"],a:0},
+ {t:"Le syndicat des copropriétaires est…",o:["une personne morale","une association loi 1901","une société civile","un service municipal"],a:0},
+ {t:"Dans une promesse unilatérale de vente, qui s'engage ?",o:["Le vendeur seulement","L'acquéreur seulement","Les deux parties","L'agent immobilier"],a:0},
+ {t:"Durée minimale légale de la condition suspensive d'obtention de prêt :",o:["1 mois","15 jours","3 mois","10 jours"],a:0},
+ {t:"Taux d'endettement maximal recommandé par le HCSF :",o:["35 %","33 %","40 %","50 %"],a:0},
+ {t:"Devant qui est signé l'acte authentique de vente ?",o:["Un notaire","Un avocat","Le maire","Le syndic"],a:0},
+ {t:"À quoi sert le bon de visite signé par le visiteur ?",o:["Prouver l'intervention de l'agent","Réserver le bien pour 10 jours","Fixer le prix de vente définitif","Remplacer l'offre d'achat écrite"],a:0},
+ {t:"Délai laissé au locataire par un commandement de payer visant la clause résolutoire :",o:["6 semaines","2 mois","1 mois","15 jours"],a:0}
+],
+vf:[
+ {t:"L'agent immobilier peut être rémunéré avant la signature de l'acte authentique de vente.",a:false},
+ {t:"Un mandat de vente conclu sans limitation de durée est valable.",a:false},
+ {t:"La surface Carrez exclut les parties d'une hauteur inférieure à 1,80 m.",a:true},
+ {t:"Une erreur de surface Carrez de plus de 5 % au détriment de l'acquéreur permet une baisse du prix.",a:true},
+ {t:"Les classes énergie et climat du DPE doivent figurer dans l'annonce immobilière.",a:true},
+ {t:"Le bailleur qui a une GLI peut demander une caution si le locataire est apprenti.",a:true},
+ {t:"Le bailleur peut refuser un candidat locataire parce qu'il a des enfants.",a:false},
+ {t:"Le bailleur peut réclamer une révision de loyer oubliée sur les 3 dernières années.",a:false},
+ {t:"Des frais de relance peuvent être facturés au locataire en retard de paiement.",a:false},
+ {t:"Un bail meublé de résidence principale dure au minimum un an (hors étudiant).",a:true},
+ {t:"Le dépôt de garantie rapporte des intérêts au locataire pendant le bail.",a:false},
+ {t:"L'état des lieux peut être établi par un commissaire de justice en cas de désaccord.",a:true},
+ {t:"Le locataire peut sous-louer son logement sans l'accord écrit du bailleur.",a:false},
+ {t:"La taxe d'enlèvement des ordures ménagères est récupérable sur le locataire.",a:true},
+ {t:"Le salaire du gardien est toujours récupérable à 100 % sur le locataire.",a:false},
+ {t:"Un agent qui ne reçoit aucun fonds doit quand même justifier d'une garantie financière.",a:false},
+ {t:"Un copropriétaire peut voter par correspondance à l'assemblée générale.",a:true},
+ {t:"Le syndic peut être un copropriétaire bénévole.",a:true},
+ {t:"Le conseil syndical peut décider seul de gros travaux sans vote de l'AG.",a:false},
+ {t:"Le procès-verbal d'AG est notifié aux copropriétaires opposants et défaillants.",a:true},
+ {t:"Les tantièmes de charges générales sont toujours égaux aux tantièmes d'ascenseur.",a:false},
+ {t:"En cas de vente du lot, le fonds de travaux reste attaché au lot.",a:true},
+ {t:"Le conseil syndical met en concurrence les contrats de syndic tous les 3 ans.",a:true},
+ {t:"L'assemblée générale ordinaire doit se tenir au moins deux fois par an.",a:false}
+],
+num:[
+ {t:"Délai de rétractation de l'acquéreur après la signature du compromis",a:10,u:"jours"},
+ {t:"Durée de validité de la carte professionnelle",a:3,u:"ans"},
+ {t:"Durée maximale d'un bail mobilité",a:10,u:"mois"},
+ {t:"Délai minimal de convocation à l'assemblée générale",a:21,u:"jours"},
+ {t:"Plafond des honoraires d'état des lieux payés par le locataire",a:3,u:"€ / m²"},
+ {t:"Délai pour payer après un commandement de payer",a:6,u:"semaines"},
+ {t:"Durée de la trêve hivernale",a:5,u:"mois"},
+ {t:"Délai pour contester une décision d'assemblée générale",a:2,u:"mois"},
+ {t:"Hauteur sous plafond minimale prise en compte dans la surface Carrez",a:180,u:"cm"},
+ {t:"Durée de validité d'un DPE",a:10,u:"ans"},
+ {t:"Durée maximale du mandat de syndic",a:3,u:"ans"},
+ {t:"Délai de prescription des loyers impayés",a:3,u:"ans"},
+ {t:"Cotisation minimale au fonds de travaux",a:5,u:"% du budget"},
+ {t:"Taux d'endettement maximal recommandé par le HCSF",a:35,u:"%"},
+ {t:"Erreur de surface Carrez au-delà de laquelle l'acquéreur peut agir",a:5,u:"%"}
+],
+mot:[
+ {d:"Document par lequel le propriétaire confie à l'agent la mission de vendre",w:"MANDAT"},
+ {d:"Personne qui s'engage à payer si le locataire ne paie pas",w:"CAUTION"},
+ {d:"Accord écrit qui étale le remboursement d'une dette de loyer",w:"PLAN D'APUREMENT",alt:["APUREMENT"]},
+ {d:"Unités de répartition des charges et des voix en copropriété",w:"TANTIEMES",alt:["TANTIEME","MILLIEMES"]},
+ {d:"Mandataire qui exécute les décisions de l'assemblée générale",w:"SYNDIC"},
+ {d:"Recherche active de nouveaux biens et de nouveaux clients",w:"PROSPECTION"},
+ {d:"Infraction combattue par la déclaration TRACFIN",w:"BLANCHIMENT"},
+ {d:"Loi qui protège l'acquéreur sur la surface d'un lot de copropriété",w:"CARREZ"},
+ {d:"Usure normale due au temps, qui limite les retenues sur le dépôt",w:"VETUSTE"},
+ {d:"Clause qui permet la résiliation du bail de plein droit",w:"RESOLUTOIRE",alt:["CLAUSE RESOLUTOIRE"]},
+ {d:"Avant-contrat qui engage à la fois le vendeur et l'acquéreur",w:"COMPROMIS"},
+ {d:"Document comparé à l'entrée et à la sortie du locataire",w:"ETAT DES LIEUX"},
+ {d:"Organe composé de copropriétaires qui contrôle le syndic",w:"CONSEIL SYNDICAL"},
+ {d:"Acte signé chez le notaire qui transfère la propriété",w:"ACTE AUTHENTIQUE",alt:["AUTHENTIQUE"]},
+ {d:"Document qui reprend les décisions votées en assemblée",w:"PROCES VERBAL",alt:["PROCES-VERBAL","PV"]}
+],
+tri:[
+ {t:"Charge récupérable sur le locataire ?",c:["Récupérable","Non récupérable"],items:[
+   ["Taxe d'enlèvement des ordures ménagères",0],["Entretien des parties communes",0],["Électricité de l'ascenseur",0],["Eau froide des parties communes",0],
+   ["Honoraires du syndic",1],["Ravalement de façade",1],["Taxe foncière",1],["Remplacement de la chaudière collective",1]]},
+ {t:"Partie commune ou partie privative ? (présomptions de la loi de 1965)",c:["Commune","Privative"],items:[
+   ["Gros œuvre du bâtiment",0],["Cage d'escalier",0],["Toiture",0],["Sol de la parcelle",0],
+   ["Revêtement de sol d'un appartement",1],["Cloisons intérieures d'un lot",1],["Sanitaires d'un appartement",1],["Volets intérieurs d'un lot",1]]},
+ {t:"Pièce que le bailleur peut demander au candidat ?",c:["Autorisée","Interdite"],items:[
+   ["Dernier avis d'imposition",0],["Trois derniers bulletins de salaire",0],["Contrat de travail",0],["Justificatif de domicile actuel",0],
+   ["Relevé de compte bancaire",1],["Photo d'identité",1],["Carte Vitale",1],["Attestation de bonne tenue de compte",1]]},
+ {t:"Usure normale ou dégradation locative ?",c:["Usure normale","Dégradation"],items:[
+   ["Peinture jaunie après 9 ans",0],["Parquet patiné dans le couloir",0],["Moquette décolorée par le soleil",0],["Joints légèrement ternis après 7 ans",0],
+   ["Brûlure de cigarette sur la moquette",1],["Vitre cassée",1],["Porte enfoncée",1],["Évier fissuré par un choc",1]]},
+ {t:"Plutôt vente ou location ?",c:["Vente","Location"],items:[
+   ["Délai de rétractation de 10 jours",0],["Acte authentique",0],["Condition suspensive de prêt",0],["Diagnostic termites joint au compromis",0],
+   ["Dépôt de garantie",1],["Révision selon l'IRL",1],["Quittance mensuelle",1],["Préavis d'un mois en zone tendue",1]]}
+],
+buzz:[
+ {t:"Quelle loi encadre la profession d'agent immobilier ?",r:"La loi Hoguet du 2 janvier 1970"},
+ {t:"Citez les trois méthodes d'estimation d'un bien.",r:"Comparaison, capitalisation (par le revenu), sol + construction"},
+ {t:"Que signifie le sigle DVF ?",r:"Demandes de valeurs foncières"},
+ {t:"Avec quel préavis le bailleur donne-t-il congé d'un logement vide ?",r:"6 mois avant l'échéance du bail"},
+ {t:"Que signifie le sigle EDD ?",r:"État descriptif de division"},
+ {t:"Qui convoque l'assemblée générale des copropriétaires ?",r:"Le syndic"},
+ {t:"Quel organe vote le budget prévisionnel de la copropriété ?",r:"L'assemblée générale"},
+ {t:"Quelle est la durée minimale d'un bail meublé pour un étudiant ?",r:"9 mois"},
+ {t:"Que doit prévoir un plan d'apurement en plus du remboursement de la dette ?",r:"Le paiement du loyer courant"},
+ {t:"À quoi sert le registre des mandats ?",r:"Numéroter chronologiquement tous les mandats ; sa tenue est obligatoire"},
+ {t:"Qui représente le syndicat des copropriétaires en justice ?",r:"Le syndic"},
+ {t:"Quelle différence entre promesse unilatérale et compromis ?",r:"Promesse : seul le vendeur s'engage. Compromis : engagement réciproque"},
+ {t:"Quel document le bailleur doit-il remettre gratuitement au locataire qui en fait la demande ?",r:"La quittance de loyer"},
+ {t:"Quelle est la période de la trêve hivernale ?",r:"Du 1er novembre au 31 mars"},
+ {t:"Quel juge est compétent pour les litiges liés au bail d'habitation ?",r:"Le juge des contentieux de la protection"},
+ {t:"Quel document permet de suivre les travaux et les contrats d'entretien de l'immeuble ?",r:"Le carnet d'entretien"},
+ {t:"Quelle majorité faut-il pour désigner le syndic ?",r:"La majorité de l'article 25 (majorité absolue des voix de tous les copropriétaires)"},
+ {t:"Que signifie le sigle TRACFIN ?",r:"Traitement du renseignement et action contre les circuits financiers clandestins"}
+]};
+
+/* ======================================================================
+   3) DÉFINITION DES MINI-JEUX
+   ====================================================================== */
+const GAMES = [
+ {id:"qcm", title:"Le Quiz Éclair", insp:"Inspiré de Kahoot", ic:"⚡", dur:20, n:8,
+  rules:"Une question, quatre réponses de couleur. Répondez sur votre PC avant la fin du chrono. Bonne réponse : 100 points + jusqu'à 50 points de rapidité. Une seule réponse, définitive."},
+ {id:"vf", title:"Vrai ou Faux express", insp:"Inspiré des duels de Quizlet Live", ic:"⚖️", dur:10, n:10,
+  rules:"Une affirmation, 10 secondes. Vrai ou faux ? Bonne réponse : 60 points + jusqu'à 40 points de rapidité."},
+ {id:"num", title:"Le Juste Chiffre", insp:"Inspiré du Juste Prix", ic:"🎯", dur:25, n:6,
+  rules:"Donnez le chiffre exact (délai, durée, taux…). L'équipe la plus proche gagne 150 points, la 2e 100, la 3e 50. Réponse exacte : bonus de 50 points."},
+ {id:"mot", title:"Le Mot Mystère", insp:"Inspiré de Motus et Wordle", ic:"🔤", dur:45, n:6,
+  rules:"Une définition et un mot caché. Une lettre se dévoile toutes les 5 secondes. Plus vous trouvez tôt, plus vous gagnez (200 points, −25 par lettre dévoilée). Un seul essai !"},
+ {id:"tri", title:"Le Grand Tri", insp:"Inspiré des jeux de tri Wordwall", ic:"🗂️", dur:50, n:2,
+  rules:"Huit éléments à classer dans la bonne catégorie. 25 points par élément bien classé. Validez avant la fin du chrono (sinon, envoi automatique)."},
+ {id:"buzz", title:"Face à Face", insp:"Inspiré de Questions pour un champion", ic:"🔴", dur:15, n:8,
+  rules:"La première équipe qui buzze répond à l'oral. Bonne réponse : +150 points. Mauvaise réponse : −50 points et l'équipe ne peut plus buzzer sur cette question ; les autres ont 10 secondes."}
+];
+const TEAMC=["var(--t0)","var(--t1)","var(--t2)"];
+
+/* ======================================================================
+   4) RÉSEAU — Supabase Realtime (Broadcast), comme les jeux Stop microbes.
+      Aucune table : les messages passent en direct entre les PC.
+      Sans Supabase : mode test (plusieurs onglets d'un même navigateur).
+   ====================================================================== */
+const Net=(()=>{ let ch=null,bc=null,handler=null,mode='none';
+  const waitLib=()=>new Promise(r=>{let n=0;const t=setInterval(()=>{if(window.supabase||++n>40){clearInterval(t);r(!!window.supabase);}},100);});
+  async function open(code,onMsg){ handler=onMsg;
+    if(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_KEY&&await waitLib()){ try{
+      const cl=window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY,{realtime:{params:{eventsPerSecond:40}}});
+      ch=cl.channel('concoursimmo-'+code,{config:{broadcast:{self:false}}});
+      ch.on('broadcast',{event:'m'},({payload})=>{if(handler)handler(payload);});
+      await new Promise((res,rej)=>{const to=setTimeout(()=>rej(new Error('délai dépassé')),9000);ch.subscribe(st=>{if(st==='SUBSCRIBED'){clearTimeout(to);res();}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){clearTimeout(to);rej(new Error(st));}});});
+      mode='online';setNet(true,'En ligne (Supabase)');return mode;}catch(e){console.warn('Supabase indisponible',e);mode='error';} }
+    try{bc=new BroadcastChannel('concoursimmo-'+code);bc.onmessage=e=>{if(handler)handler(e.data);};}catch(e){}
+    if(mode!=='error')mode='local';
+    setNet(mode==='local',mode==='local'?'Mode test (un seul ordinateur)':'Supabase injoignable');return mode;}
+  function send(m){try{if(ch&&mode==='online')ch.send({type:'broadcast',event:'m',payload:m});else if(bc)bc.postMessage(m);}catch(e){}}
+  return {open,send,get mode(){return mode;}};})();
+function setNet(ok,msg){const el=document.getElementById("netStatus");if(el)el.textContent=(ok?"🟢 ":"🔴 ")+msg;}
+const now=()=>Date.now();
+
+/* ======================================================================
+   5) OUTILS DIVERS
+   ====================================================================== */
+const $=s=>document.querySelector(s);
+const app=()=>document.getElementById("app");
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function norm(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"");}
+let AC=null;
+function beep(f=880,d=.12,type="sine",vol=.15){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=vol;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+const sndTick=()=>beep(1000,.06,"square",.06), sndEnd=()=>{beep(220,.5,"sawtooth",.15)}, sndOk=()=>{beep(660,.12);setTimeout(()=>beep(990,.2),120)}, sndBuzz=()=>beep(150,.6,"square",.2), sndJoin=()=>{beep(880,.1);setTimeout(()=>beep(1320,.12),70)};
+function timerSVG(rem,dur){
+  const r=48,c=2*Math.PI*r,frac=Math.max(0,Math.min(1,rem/dur));
+  const col=rem<=5?"#EF4444":"#F59E0B";
+  return `<div class="timer ${rem<=5?"warn":""}"><svg width="110" height="110"><circle cx="55" cy="55" r="${r}" stroke="#1E4060" stroke-width="10" fill="none"/><circle cx="55" cy="55" r="${r}" stroke="${col}" stroke-width="10" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-frac)}" stroke-linecap="round"/></svg><div class="tv">${Math.ceil(Math.max(0,rem))}</div></div>`;
+}
+function confetti(){const cols=["#E11D48","#F59E0B","#0EA5A4","#22C55E","#3B82F6","#fff"];for(let i=0;i<140;i++){const d=document.createElement("div");d.className="confetti";d.style.left=Math.random()*100+"vw";d.style.background=cols[i%cols.length];d.style.animationDuration=(2.5+Math.random()*2.5)+"s";d.style.animationDelay=Math.random()*1.5+"s";document.body.appendChild(d);setTimeout(()=>d.remove(),6500);}}
+function fmtN(x){return String(Math.round(x*100)/100).replace(".",",");}
+
+/* ======================================================================
+   6) ÉCRAN D'ACCUEIL
+   ====================================================================== */
+function home(){
+  app().innerHTML=`
+  <div class="center" style="padding-top:30px">
+    <div class="logo">Cabinet Vasseur présente</div>
+    <h1 class="big">Le Grand Concours de l'Immo</h1>
+    <div class="sub">Six mini-jeux chronométrés · trois équipes · un vainqueur</div>
+  </div>
+  <div class="grid2 mt" style="max-width:900px;margin:30px auto 0">
+    <div class="card center"><div style="font-size:54px">🖥️</div><h2>PC central</h2><p class="small">Pour le formateur, projeté au tableau.</p><button class="btn amb" onclick="centralStart()">Je suis le formateur</button></div>
+    <div class="card center"><div style="font-size:54px">💻</div><h2>PC d'équipe</h2><p class="small">Un PC par équipe, avec le code donné au tableau.</p><button class="btn" onclick="teamJoinScreen()">Je suis une équipe</button></div>
+  </div>`;
+}
+
+/* ======================================================================
+   7) PC CENTRAL (il fait foi : chrono, réponses, scores)
+   ====================================================================== */
+let G=null, LOOP=null, HB=null;
+function saveG(){try{localStorage.setItem("gci_central",JSON.stringify(G));}catch(e){}}
+function centralStart(){
+  let prev=null;try{prev=JSON.parse(localStorage.getItem("gci_central")||"null");}catch(e){}
+  app().innerHTML=`<div class="card" style="max-width:820px;margin:30px auto">
+   <div class="logo">PC central</div><h2>Préparer la partie</h2>
+   <div class="grid3">${[0,1,2].map(i=>`<div><label class="l">Équipe ${i+1}</label><input id="tn${i}" value="${esc(prev?prev.teams[i].name:["Les Négociateurs","Les Gestionnaires","Les Syndics"][i])}"></div>`).join("")}</div>
+   <div class="row mt"><button class="btn amb" onclick="newSession()">Nouvelle partie</button>
+   ${prev?`<button class="btn ghost" onclick="resumeSession()">Reprendre la partie ${esc(prev.code)} (scores conservés)</button>`:""}</div>
+   <p class="small mt">Une nouvelle partie génère un code à donner aux équipes et remet les scores à zéro.</p>
+  </div>`;
+}
+async function openCentral(){
+  app().innerHTML=`<div class="card center" style="max-width:600px;margin:60px auto"><h2>Connexion au serveur…</h2></div>`;
+  await Net.open(G.code,centralOnMsg);
+  clearInterval(HB);HB=setInterval(sendState,2000);
+}
+async function newSession(){
+  const code=String(Math.floor(1000+Math.random()*9000));
+  G={code,teams:[0,1,2].map(i=>({name:$("#tn"+i).value.trim()||"Équipe "+(i+1),score:0})),played:{},used:{},cur:null,v:0,phase:"lobby",qc:0,joined:[false,false,false],lastExtra:{}};
+  saveG();await openCentral();pushState();lobby();
+}
+async function resumeSession(){
+  G=JSON.parse(localStorage.getItem("gci_central"));G.joined=[false,false,false];
+  if(G.cur&&G.cur.phase!=="reveal"){G.cur=null;G.phase="menu";}
+  await openCentral();
+  if(G.phase==="lobby")lobby();else menu();
+}
+function sendState(){
+  if(!G)return;const c=G.cur;
+  const st={v:G.v,phase:G.phase,teams:G.teams.map(t=>({name:t.name,score:t.score}))};
+  if(c&&G.phase==="game"){Object.assign(st,{game:c.game,gtitle:gameDef(c.game).title,qid:c.qid,num:c.i+1,total:c.list.length,qphase:c.phase,dur:c.dur,payload:c.payload,mask:c.mask||null,excluded:c.excluded||[],buzzed:c.buzzed??null,attempt:c.attempt||0,results:c.results||null,correct:c.correctLabel||null,got:[0,1,2].map(k=>!!(c.answers&&k in c.answers))});
+    if(c.startAt&&(c.phase==="question"||c.phase==="buzz"))st.remMs=c.startAt+c.dur*1000-now();}
+  Object.assign(st,G.lastExtra||{});
+  Net.send({t:"st",s:st});
+}
+function pushState(extra){G.lastExtra=extra||{};G.v++;saveG();sendState();}
+const gameDef=id=>GAMES.find(g=>g.id===id);
+
+function centralOnMsg(m){
+  if(!G||!m)return;
+  if(m.t==="hello"){sendState();return;}
+  if(m.t==="join"){const k=m.team;if(!G.joined[k]){G.joined[k]=true;sndJoin();}markJoined();sendState();return;}
+  const c=G.cur;if(!c)return;
+  if(m.t==="ans"&&c.phase==="question"&&m.qid===c.qid&&!(m.team in c.answers)){
+    const t=now()-c.startAt;if(t<=c.dur*1000+800){c.answers[m.team]={v:m.v,t:Math.max(0,t)};updChips();sendState();}
+  }
+  if(m.t==="bz"&&c.phase==="buzz"&&m.qid===c.qid&&m.attempt===c.attempt&&!c.excluded.includes(m.team)&&now()<=c.startAt+c.dur*1000+500){
+    clearInterval(LOOP);c.buzzed=m.team;c.phase="buzzed";sndBuzz();pushState();renderQ();
+  }
+}
+function markJoined(){for(let k=0;k<3;k++){if(!G.joined[k])continue;const d=document.getElementById("jd"+k);if(d)d.classList.add("on");const l=document.getElementById("lj"+k);if(l){l.textContent="Connectée ✓";l.className="ok";}}}
+function scoreboardHTML(){
+  return `<div class="card scoreboard"><div class="logo">Classement</div>${G.teams.map((t,i)=>`<div class="team tc${i}"><span><span class="dot ${G.joined[i]?"on":""}" id="jd${i}"></span>${esc(t.name)}</span><span class="pts">${t.score}</span></div>`).join("")}
+  <div class="small mt">Code de la partie : <b style="color:var(--amber);font-size:20px">${G.code}</b></div>
+  <div class="row mt"><button class="btn ghost sm" onclick="adjustScores()">Ajuster les scores</button></div></div>`;
+}
+function lobby(){
+  G.phase="lobby";clearInterval(LOOP);
+  const url=location.href.split("#")[0];
+  app().innerHTML=`<div class="center"><div class="logo">Le Grand Concours de l'Immo</div><h1 class="big">Rejoignez la partie !</h1></div>
+  <div class="cwrap mt"><div class="card center">
+     <p class="sub">Sur chaque PC d'équipe, ouvrez :</p><p style="font-size:22px;font-weight:800;word-break:break-all">${esc(url)}</p>
+     <p class="sub">puis cliquez sur « Je suis une équipe » et saisissez le code :</p>
+     <div style="font-size:110px;font-weight:900;letter-spacing:.15em;color:var(--amber)">${G.code}</div>
+     <div class="grid3 mt">${G.teams.map((t,i)=>`<div class="card tc${i}"><div style="font-size:22px;font-weight:900">${esc(t.name)}</div><div id="lj${i}" class="small">En attente…</div></div>`).join("")}</div>
+     <button class="btn amb mt" onclick="menu()">Tout le monde est là : on commence ! →</button>
+  </div>${scoreboardHTML()}</div>`;
+  markJoined();
+}
+function menu(){
+  clearInterval(LOOP);G.phase="menu";G.cur=null;pushState();
+  app().innerHTML=`<div class="qhead"><div><div class="logo">Le Grand Concours de l'Immo</div><h1 class="big" style="font-size:38px">Choisissez le prochain jeu</h1></div><button class="btn red" onclick="finale()">🏆 Podium final</button></div>
+  <div class="cwrap mt"><div class="games">${GAMES.map(g=>`<div class="gtile ${G.played[g.id]?"done":""}" onclick="intro('${g.id}')"><div class="ic">${g.ic}</div><div class="insp">${g.insp}</div><h3>${g.title}</h3><div class="meta">${g.n} questions · ${g.dur} s par question</div></div>`).join("")}</div>${scoreboardHTML()}</div>`;
+}
+function intro(gid){
+  const g=gameDef(gid);
+  G.phase="intro";G.cur=null;pushState({introGame:g.title,introRules:g.rules,introIc:g.ic});
+  app().innerHTML=`<div class="cwrap"><div class="card center" style="padding:40px">
+     <div style="font-size:80px">${g.ic}</div><div class="insp" style="color:var(--amber);font-weight:800;text-transform:uppercase">${g.insp}</div>
+     <h1 class="big">${g.title}</h1><p style="font-size:24px;line-height:1.5;max-width:850px;margin:18px auto">${g.rules}</p>
+     <div class="row" style="justify-content:center"><label class="small">Nombre de questions</label><select id="nq" style="width:90px">${[2,3,4,5,6,8,10,12].filter(n=>n<=BANK[gid].length).map(n=>`<option ${n===g.n?"selected":""}>${n}</option>`).join("")}</select>
+     <label class="small">Chrono (s)</label><select id="dq" style="width:90px">${[8,10,15,20,25,30,45,50,60].map(n=>`<option ${n===g.dur?"selected":""}>${n}</option>`).join("")}</select></div>
+     <div class="row mt" style="justify-content:center"><button class="btn ghost" onclick="menu()">← Retour</button><button class="btn amb" onclick="startGame('${gid}')">C'est parti ! ▶</button></div>
+  </div>${scoreboardHTML()}</div>`;
+}
+function draw(gid,n){
+  const used=G.used[gid]||[];const idx=BANK[gid].map((_,i)=>i);
+  let fresh=shuffle(idx.filter(i=>!used.includes(i)));
+  if(fresh.length<n){fresh=fresh.concat(shuffle(idx.filter(i=>!fresh.includes(i))));}
+  const pick=fresh.slice(0,n);G.used[gid]=used.concat(pick);return pick;
+}
+function startGame(gid){
+  const n=+$("#nq").value, dur=+$("#dq").value;
+  G.cur={game:gid,list:draw(gid,n),i:-1,dur,baseDur:dur,gained:[0,0,0]};
+  G.phase="game";nextQ();
+}
+function nextQ(){
+  clearInterval(LOOP);
+  const c=G.cur;c.i++;
+  if(c.i>=c.list.length)return endGame();
+  const gid=c.game,q=BANK[gid][c.list[c.i]];
+  G.qc++;c.qid=gid+G.qc+Math.random().toString(36).slice(2,5);
+  c.answers={};c.results=null;c.correctLabel=null;c.mask=null;c.excluded=[];c.buzzed=null;c.attempt=1;c.lastTick=null;
+  c.dur=c.baseDur||gameDef(gid).dur;
+  if(gid==="qcm"){c.order=shuffle([0,1,2,3]);c.payload={t:q.t,o:c.order.map(k=>q.o[k])};c.right=c.order.indexOf(q.a);c.correctLabel="ABCD"[c.right]+". "+q.o[q.a];}
+  if(gid==="vf"){c.payload={t:q.t};c.correctLabel=q.a?"VRAI":"FAUX";}
+  if(gid==="num"){c.payload={t:q.t,u:q.u};c.correctLabel=q.a+" "+q.u;}
+  if(gid==="mot"){const w=q.w;c.letters=[...w].map((ch,i)=>/[A-Z]/.test(ch)?i:-1).filter(i=>i>=0);c.revOrder=shuffle(c.letters);c.revealed=0;c.mask=maskOf(w,[]);c.payload={d:q.d,len:c.letters.length};c.correctLabel=w;c.step=5;}
+  if(gid==="tri"){c.items=shuffle(q.items.map((it,k)=>k));c.payload={t:q.t,c:q.c,items:c.items.map(k=>q.items[k][0])};}
+  if(gid==="buzz"){c.payload={t:q.t};c.correctLabel=q.r;}
+  c.phase="ready";c.startAt=null;
+  renderQ();pushState();
+}
+function maskOf(w,revIdx){return [...w].map((ch,i)=>/[A-Z]/.test(ch)?(revIdx.includes(i)?ch:"_"):(ch===" "?" ":ch)).join("");}
+function launchQ(){
+  const c=G.cur;
+  if(c.game==="buzz")c.dur=c.attempt>1?10:c.baseDur;
+  c.startAt=now();c.lastTick=null;
+  c.phase=c.game==="buzz"?"buzz":"question";
+  pushState();renderQ();
+  clearInterval(LOOP);LOOP=setInterval(tick,250);
+}
+function tick(){
+  const c=G.cur;if(!c)return;
+  const rem=(c.startAt+c.dur*1000-now())/1000;
+  const tw=document.getElementById("tw");if(tw)tw.innerHTML=timerSVG(rem,c.dur);
+  const s=Math.ceil(rem);if(rem>0&&s<=5&&c.lastTick!==s){c.lastTick=s;sndTick();}
+  if(c.phase==="question"){
+    if(c.game==="mot"){const el=(now()-c.startAt)/1000;const want=Math.min(c.letters.length-2,Math.floor(el/c.step));if(want>c.revealed){c.revealed=want;c.mask=maskOf(BANK.mot[c.list[c.i]].w,c.revOrder.slice(0,want));const m=document.getElementById("maskC");if(m)m.textContent=c.mask;pushState();}}
+    if(Object.keys(c.answers).length>=3||rem<=-0.9){closeQ();}
+  }else if(c.phase==="buzz"){
+    if(rem<=-0.6){clearInterval(LOOP);sndEnd();c.results={};c.phase="reveal";pushState();renderQ();}
+  }
+}
+function updChips(){const c=G.cur;for(let k=0;k<3;k++){const el=document.getElementById("as"+k);if(el)el.innerHTML=(k in c.answers)?'<span class="ok">✔ Réponse reçue</span>':'<span class="small">en attente…</span>';}}
+function closeQ(){
+  const c=G.cur;if(c.phase!=="question")return;
+  clearInterval(LOOP);sndEnd();
+  const q=BANK[c.game][c.list[c.i]];
+  const R={};const speed=k=>c.answers[k]?Math.max(0,1-c.answers[k].t/(c.dur*1000)):0;
+  for(let k=0;k<3;k++){
+    const a=c.answers[k];
+    if(c.game==="qcm"){const ok=!!a&&a.v===c.right;R[k]={ok,pts:ok?Math.round(100+50*speed(k)):0,label:a?"ABCD"[a.v]+". "+c.payload.o[a.v]:"Pas de réponse"};}
+    if(c.game==="vf"){const ok=!!a&&a.v===q.a;R[k]={ok,pts:ok?Math.round(60+40*speed(k)):0,label:a?(a.v?"VRAI":"FAUX"):"Pas de réponse"};}
+    if(c.game==="mot"){const ok=!!a&&[q.w].concat(q.alt||[]).some(x=>norm(x)===norm(a.v));const rev=a?Math.min(c.letters.length-2,Math.floor((a.t/1000)/c.step)):0;R[k]={ok,pts:ok?Math.max(50,200-25*rev):0,label:a?a.v:"Pas de réponse"};}
+    if(c.game==="tri"){const v=a?a.v:[];let n=0;c.items.forEach((it,j)=>{if(v[j]===q.items[it][1])n++;});R[k]={ok:n===c.items.length,pts:n*25,label:n+" / "+c.items.length+" bien classés",part:n>0&&n<c.items.length};}
+  }
+  if(c.game==="num"){
+    const ans=[0,1,2].filter(k=>c.answers[k]&&c.answers[k].v!==""&&!isNaN(+c.answers[k].v)).map(k=>({k,d:Math.abs(+c.answers[k].v-q.a)}));
+    const ds=[...new Set(ans.map(x=>x.d))].sort((a,b)=>a-b);const tab=[150,100,50];
+    for(let k=0;k<3;k++){const a=c.answers[k];const e=ans.find(x=>x.k===k);
+      if(!e){R[k]={ok:false,pts:0,label:"Pas de réponse"};continue;}
+      const rank=ds.indexOf(e.d);let pts=tab[rank]||0;if(e.d===0)pts+=50;
+      R[k]={ok:e.d===0,part:e.d!==0&&rank===0,pts,label:a.v+" "+q.u+(e.d===0?" (exact !)":" (écart "+fmtN(e.d)+")")};}
+  }
+  for(let k=0;k<3;k++){G.teams[k].score+=R[k].pts;c.gained[k]+=R[k].pts;}
+  if([0,1,2].some(k=>R[k].ok))sndOk();
+  if(c.game==="tri")c.correctLabel=q.c.map((cat,ci)=>cat+" : "+q.items.filter(it=>it[1]===ci).map(it=>it[0]).join(", ")).join(" — ");
+  c.results=R;c.phase="reveal";
+  pushState();renderQ();
+}
+function buzzJudge(ok){
+  const c=G.cur;const k=c.buzzed;
+  if(ok){G.teams[k].score+=150;c.gained[k]+=150;sndOk();c.results={[k]:{ok:true,pts:150}};c.phase="reveal";pushState();renderQ();return;}
+  G.teams[k].score-=50;c.gained[k]-=50;c.excluded.push(k);c.buzzed=null;
+  if(c.excluded.length>=3){c.results={};c.phase="reveal";pushState();renderQ();return;}
+  c.attempt++;launchQ();
+}
+function skipBuzz(){clearInterval(LOOP);const c=G.cur;c.results={};c.phase="reveal";pushState();renderQ();}
+
+function renderQ(){
+  const c=G.cur,g=gameDef(c.game),q=BANK[c.game][c.list[c.i]];
+  let body="";
+  const head=`<div class="qhead"><div><div class="qnum">${g.ic} ${g.title} · Question ${c.i+1} / ${c.list.length}</div></div><div id="tw">${c.phase==="ready"?timerSVG(c.dur,c.dur):(c.startAt?timerSVG((c.startAt+c.dur*1000-now())/1000,c.dur):"")}</div></div>`;
+  if(c.game==="qcm"){
+    body=`<div class="qtext">${esc(c.payload.t)}</div><div class="opts">${c.payload.o.map((o,j)=>`<div class="opt o${j} ${c.phase==="reveal"?(j===c.right?"right":"dim"):""}"><span class="sh">${"▲◆●■"[j]}</span>${"ABCD"[j]}. ${esc(o)}</div>`).join("")}</div>`;
+  }
+  if(c.game==="vf"){body=`<div class="qtext">${esc(c.payload.t)}</div><div class="opts"><div class="opt o3 ${c.phase==="reveal"?(q.a?"right":"dim"):""}"><span class="sh">✔</span>VRAI</div><div class="opt o0 ${c.phase==="reveal"?(!q.a?"right":"dim"):""}"><span class="sh">✘</span>FAUX</div></div>`;}
+  if(c.game==="num"){body=`<div class="qtext">${esc(c.payload.t)} <span style="color:var(--amber)">(en ${esc(c.payload.u)})</span></div>`;}
+  if(c.game==="mot"){body=`<div class="qtext">${esc(c.payload.d)}</div><div class="mask" id="maskC">${c.phase==="reveal"?esc(q.w):esc(c.mask)}</div>`;}
+  if(c.game==="tri"){body=`<div class="qtext">${esc(c.payload.t)}</div><div class="grid2">${c.payload.items.map((it,j)=>`<div class="triitem"><span>${esc(it)}</span>${c.phase==="reveal"?`<b style="color:var(--amber)">${esc(q.c[q.items[c.items[j]][1]])}</b>`:""}</div>`).join("")}</div>`;}
+  if(c.game==="buzz"){body=`<div class="qtext">${esc(c.payload.t)}</div>`;
+    if(c.phase==="buzzed")body+=`<div class="card tc${c.buzzed} flash center" style="font-size:40px;font-weight:900">🔴 ${esc(G.teams[c.buzzed].name)} a buzzé !</div>
+      <details class="mt"><summary class="small">Afficher la réponse attendue (formateur)</summary><div class="answer-box">${esc(q.r)}</div></details>
+      <div class="row mt"><button class="btn grn" onclick="buzzJudge(true)">✔ Bonne réponse (+150)</button><button class="btn red" onclick="buzzJudge(false)">✘ Mauvaise réponse (−50)</button></div>`;
+    if(c.excluded.length&&c.phase!=="reveal")body+=`<p class="small">Ne peuvent plus buzzer : ${c.excluded.map(k=>esc(G.teams[k].name)).join(", ")}</p>`;
+  }
+  let foot="";
+  if(c.phase==="ready")foot=`<div class="row mt"><button class="btn amb" onclick="launchQ()">▶ Lancer le chrono</button><button class="btn ghost" onclick="endGame()">Terminer ce jeu</button></div>`;
+  if(c.phase==="question")foot=`<div class="ansbar">${G.teams.map((t,k)=>`<div class="chip tc${k}"><span>${esc(t.name)}</span><span id="as${k}"><span class="small">en attente…</span></span></div>`).join("")}</div><div class="row mt"><button class="btn ghost sm" onclick="closeQ()">Arrêter le chrono et corriger</button></div>`;
+  if(c.phase==="buzz")foot=`<p class="sub">🔴 Buzzez sur vos PC !</p><div class="row mt"><button class="btn ghost sm" onclick="skipBuzz()">Personne ne trouve : réponse</button></div>`;
+  if(c.phase==="reveal"){
+    if(c.game!=="tri"&&c.game!=="qcm"&&c.game!=="vf")foot+=`<div class="answer-box">Réponse : ${esc(c.correctLabel)}</div>`;
+    if(c.game==="buzz"){const k=Object.keys(c.results||{})[0];foot+=k!==undefined?`<p style="font-size:24px" class="ok">${esc(G.teams[k].name)} remporte 150 points !</p>`:`<p class="sub">Aucune équipe ne marque sur cette question.</p>`;}
+    else foot+=`<table class="res mt"><tr><th>Équipe</th><th>Réponse</th><th>Points</th></tr>${G.teams.map((t,k)=>{const r=c.results[k];return `<tr><td><b style="color:${TEAMC[k]}">${esc(t.name)}</b></td><td class="${r.ok?"ok":(r.part?"":"ko")}">${r.ok?"✔ ":(r.part?"◐ ":"✘ ")}${esc(r.label)}</td><td><b>+${r.pts}</b></td></tr>`;}).join("")}</table>`;
+    foot+=`<div class="row mt"><button class="btn amb" onclick="nextQ()">${c.i+1<c.list.length?"Question suivante →":"Voir le bilan du jeu →"}</button></div>`;
+  }
+  app().innerHTML=`<div class="cwrap"><div class="card">${head}${body}${foot}</div>${scoreboardHTML()}</div>`;
+  if(c.phase==="question")updChips();
+}
+function endGame(){
+  clearInterval(LOOP);const c=G.cur;G.played[c.game]=true;
+  const g=gameDef(c.game);G.phase="gameend";G.cur=null;
+  pushState({gtitle:g.title,gained:c.gained});
+  const order=[0,1,2].sort((a,b)=>c.gained[b]-c.gained[a]);
+  app().innerHTML=`<div class="cwrap"><div class="card center" style="padding:36px"><div style="font-size:70px">${g.ic}</div><h1 class="big">Bilan : ${g.title}</h1>
+   <table class="res" style="max-width:700px;margin:20px auto"><tr><th>Équipe</th><th>Points gagnés dans ce jeu</th><th>Total</th></tr>${order.map(k=>`<tr><td><b style="color:${TEAMC[k]}">${esc(G.teams[k].name)}</b></td><td>+${c.gained[k]}</td><td><b>${G.teams[k].score}</b></td></tr>`).join("")}</table>
+   <button class="btn amb" onclick="menu()">Retour au choix des jeux →</button></div>${scoreboardHTML()}</div>`;
+}
+function finale(){
+  clearInterval(LOOP);G.phase="final";G.cur=null;pushState();
+  const o=[0,1,2].sort((a,b)=>G.teams[b].score-G.teams[a].score);
+  const h=[220,300,170],pos=[o[1],o[0],o[2]],lab=["2e","1er","3e"];
+  app().innerHTML=`<div class="center"><div class="logo">Le Grand Concours de l'Immo</div><h1 class="big">🏆 ${esc(G.teams[o[0]].name)} remporte le concours !</h1>
+   <div class="podium">${pos.map((k,i)=>`<div class="p tc${k}" style="height:${h[i]}px"><div style="font-size:40px">${lab[i]}</div>${esc(G.teams[k].name)}<div style="font-size:34px">${G.teams[k].score}</div></div>`).join("")}</div>
+   <div class="row" style="justify-content:center"><button class="btn ghost" onclick="menu()">← Retour aux jeux</button></div></div>`;
+  confetti();sndOk();
+}
+function adjustScores(){
+  const v=prompt("Ajuster les scores (formateur) : saisissez les trois scores séparés par des points-virgules",G.teams.map(t=>t.score).join(";"));
+  if(v===null)return;const p=v.split(";").map(x=>parseInt(x,10));
+  if(p.length===3&&p.every(n=>!isNaN(n))){p.forEach((n,k)=>G.teams[k].score=n);G.v++;saveG();sendState();document.querySelectorAll(".scoreboard .pts").forEach((el,k)=>el.textContent=G.teams[k].score);}
+}
+
+/* ======================================================================
+   8) PC D'ÉQUIPE
+   ====================================================================== */
+let TM={code:"",team:null,v:-1,qid:null,key:null,sent:false,tri:[],state:null,deadline:null,pend:null,joinHB:null,timerI:null,opened:false};
+function teamJoinScreen(){
+  let prev={};try{prev=JSON.parse(localStorage.getItem("gci_team")||"{}");}catch(e){}
+  app().innerHTML=`<div class="card" style="max-width:640px;margin:40px auto">
+   <div class="logo">PC d'équipe</div><h2>Rejoindre la partie</h2>
+   <label class="l">Code affiché au tableau</label><input id="jc" inputmode="numeric" maxlength="4" value="${esc(prev.code||"")}" style="font-size:34px;text-align:center;letter-spacing:.3em">
+   <div class="row mt"><button class="btn" id="jbtn" onclick="teamCheck()">Valider le code</button><span id="jm"></span></div>
+   <div id="jteams" class="mt"></div></div>`;
+}
+async function teamCheck(){
+  const code=$("#jc").value.trim();if(!/^\d{4}$/.test(code)){$("#jm").innerHTML='<span class="ko">Le code comporte 4 chiffres.</span>';return;}
+  $("#jbtn").disabled=true;$("#jm").textContent="Recherche de la partie…";
+  if(!TM.opened||TM.code!==code){TM.code=code;await Net.open(code,teamOnMsg);TM.opened=true;}
+  TM.state=null;Net.send({t:"hello"});
+  let n=0;const w=setInterval(()=>{n++;
+    if(TM.state){clearInterval(w);$("#jm").innerHTML='<span class="ok">Partie trouvée ✓</span>';
+      $("#jteams").innerHTML=`<p class="sub">Choisissez votre équipe :</p>`+TM.state.teams.map((t,i)=>`<button class="btn tc${i}" style="width:100%;margin:6px 0;font-size:22px;box-shadow:none;border:3px solid" onclick="teamEnter(${i})">${esc(t.name)}</button>`).join("");}
+    else if(n%4===0)Net.send({t:"hello"});
+    if(n>=24&&!TM.state){clearInterval(w);$("#jbtn").disabled=false;$("#jm").innerHTML='<span class="ko">Partie introuvable : vérifiez le code et que le PC central a bien lancé la partie.</span>';}
+  },250);
+}
+function teamEnter(k){
+  TM.team=k;try{localStorage.setItem("gci_team",JSON.stringify({code:TM.code,team:k}));}catch(e){}
+  TM.key=null;Net.send({t:"join",team:k});
+  clearInterval(TM.joinHB);TM.joinHB=setInterval(()=>Net.send({t:"join",team:k}),4000);
+  clearInterval(TM.timerI);TM.timerI=setInterval(teamTimer,250);
+  if(TM.state)renderTeamIfNeeded(true);
+}
+function teamOnMsg(m){
+  if(!m||m.t!=="st")return;const s=m.s;
+  TM.state=s;
+  if(TM.team===null)return;
+  // chrono : on cale l'échéance sur le temps restant envoyé par le PC central
+  if(s.remMs!=null){const d=now()+s.remMs;if(TM.deadline==null||Math.abs(d-TM.deadline)>600||TM.dlKey!==s.qid+"|"+s.attempt+"|"+s.qphase){TM.deadline=d;TM.dlKey=s.qid+"|"+s.attempt+"|"+s.qphase;}}
+  else TM.deadline=null;
+  // accusé de réception de notre réponse
+  if(TM.pend&&s.qid===TM.pend.qid&&s.got&&s.got[TM.team]){TM.pend=null;}
+  renderTeamIfNeeded(false);
+}
+function renderTeamIfNeeded(force){
+  const s=TM.state;
+  const key=s.phase+"|"+(s.qid||"")+"|"+(s.qphase||"")+"|"+(s.attempt||0)+"|"+(s.phase==="intro"?s.introGame:"");
+  if(s.qid!==TM.qid){TM.qid=s.qid;TM.sent=false;TM.tri=[];TM.pend=null;}
+  if(!force&&TM.key===key){
+    updHead();
+    if(s.game==="mot"&&s.qphase==="question"){const m=document.getElementById("maskT");if(m)m.textContent=s.mask;}
+    return;
+  }
+  TM.key=key;renderTeam();
+}
+function teamHead(){const s=TM.state,t=s.teams[TM.team];return `<div class="thead tc${TM.team}"><span>${esc(t.name)}</span><span id="tscore">${t.score} pts</span></div>`;}
+function updHead(){const el=document.getElementById("tscore");if(el&&TM.state)el.textContent=TM.state.teams[TM.team].score+" pts";}
+function remT(){return TM.deadline==null?null:(TM.deadline-now())/1000;}
+function teamTimer(){
+  const s=TM.state;if(!s)return;
+  // renvoi de la réponse tant que le PC central n'a pas accusé réception
+  if(TM.pend&&now()-TM.pend.at>1200){TM.pend.at=now();Net.send(TM.pend.m);}
+  const tw=document.getElementById("ttw");
+  if(!tw||!(s.qphase==="question"||s.qphase==="buzz"))return;
+  const r=remT();if(r===null)return;tw.innerHTML=timerSVG(r,s.dur);
+  if(r<=0&&s.qphase==="question"&&!TM.sent){
+    if(s.game==="tri"&&TM.tri.some(x=>x!=null))return sendAns(TM.tri.map(x=>x??-1),true);
+    lockTeam("⏱️ Temps écoulé !");
+  }
+  if(r<=0&&s.qphase==="buzz"){const b=document.getElementById("bzb");if(b&&!b.disabled){b.disabled=true;b.textContent="Temps écoulé";}}
+}
+function lockTeam(msg){document.querySelectorAll("#tz button,#tz input").forEach(e=>e.disabled=true);const m=document.getElementById("tmsg");if(m)m.innerHTML=`<div class="verdict neu">${msg}</div>`;}
+function sendAns(v,auto){
+  if(TM.sent)return;const r=remT();
+  if(!auto&&r!==null&&r<-0.3){lockTeam("⏱️ Temps écoulé !");return;}
+  TM.sent=true;lockTeam(auto?"⏱️ Temps écoulé : votre classement a été envoyé.":"✔ Réponse envoyée. Regardez l'écran central !");
+  const m={t:"ans",qid:TM.state.qid,team:TM.team,v};
+  TM.pend={qid:m.qid,m,at:now()};Net.send(m);
+}
+function sendBuzz(){
+  const s=TM.state;const b=document.getElementById("bzb");b.disabled=true;b.textContent="BUZZÉ !";sndBuzz();
+  const m={t:"bz",qid:s.qid,attempt:s.attempt,team:TM.team};Net.send(m);setTimeout(()=>Net.send(m),500);
+}
+function renderTeam(){
+  const s=TM.state;let h=teamHead();
+  if(s.phase==="lobby"||s.phase==="menu")h+=`<div class="waiting">👀 Partie rejointe !<br><br>Regardez l'écran central : le prochain jeu va commencer.</div>`;
+  else if(s.phase==="intro")h+=`<div class="card center"><div style="font-size:70px">${s.introIc||""}</div><h1 class="big">${esc(s.introGame)}</h1><p style="font-size:21px;line-height:1.5">${esc(s.introRules)}</p></div>`;
+  else if(s.phase==="gameend")h+=`<div class="card center"><h1 class="big">Fin du jeu : ${esc(s.gtitle)}</h1><p class="sub" style="font-size:26px">Votre équipe a gagné <b style="color:var(--amber)">${s.gained?s.gained[TM.team]:0} points</b> dans ce jeu.</p></div>`;
+  else if(s.phase==="final"){const o=[0,1,2].sort((a,b)=>s.teams[b].score-s.teams[a].score);const rk=o.indexOf(TM.team)+1;h+=`<div class="card center"><h1 class="big">${rk===1?"🏆 Victoire !":"Bravo !"}</h1><p style="font-size:30px">Votre équipe termine <b>${rk===1?"1re":rk+"e"}</b> avec ${s.teams[TM.team].score} points.</p></div>`;if(rk===1)confetti();}
+  else if(s.phase==="game"&&s.payload){
+    const P=s.payload,qp=s.qphase;
+    h+=`<div class="card"><div class="qhead"><div class="qnum">${esc(s.gtitle)} · ${s.num} / ${s.total}</div><div id="ttw">${qp==="ready"?timerSVG(s.dur,s.dur):""}</div></div>`;
+    if(qp==="ready"){h+=`<div class="waiting">Prêts ? La question arrive…</div></div>`;}
+    else if(qp==="question"){
+      h+=`<div id="tz">`;
+      if(s.game==="qcm")h+=`<div class="qtext">${esc(P.t)}</div><div class="opts">${P.o.map((o,j)=>`<button class="opt o${j}" onclick="this.classList.add('sel');sendAns(${j})"><span class="sh">${"▲◆●■"[j]}</span>${"ABCD"[j]}. ${esc(o)}</button>`).join("")}</div>`;
+      if(s.game==="vf")h+=`<div class="qtext">${esc(P.t)}</div><div class="opts"><button class="opt o3" onclick="this.classList.add('sel');sendAns(true)"><span class="sh">✔</span>VRAI</button><button class="opt o0" onclick="this.classList.add('sel');sendAns(false)"><span class="sh">✘</span>FAUX</button></div>`;
+      if(s.game==="num")h+=`<div class="qtext">${esc(P.t)}</div><div class="row"><input id="numIn" type="number" step="any" style="max-width:260px;font-size:34px;text-align:center"><b style="font-size:24px">${esc(P.u)}</b><button class="btn amb" onclick="const v=document.getElementById('numIn').value;if(v!=='')sendAns(v)">Valider</button></div>`;
+      if(s.game==="mot")h+=`<div class="qtext">${esc(P.d)}</div><div class="mask" id="maskT">${esc(s.mask)}</div><div class="row"><input id="motIn" placeholder="Votre mot (un seul essai)" style="max-width:460px;font-size:26px;text-transform:uppercase"><button class="btn amb" onclick="const v=document.getElementById('motIn').value.trim();if(v)sendAns(v)">Valider</button></div>`;
+      if(s.game==="tri"){if(!TM.tri.length)TM.tri=P.items.map(()=>null);h+=`<div class="qtext" style="font-size:26px">${esc(P.t)}</div>${P.items.map((it,j)=>`<div class="triitem"><span>${esc(it)}</span><span class="bt">${P.c.map((c,ci)=>`<button id="tb${j}_${ci}" class="${TM.tri[j]===ci?"on":""}" onclick="triSet(${j},${ci})">${esc(c)}</button>`).join("")}</span></div>`).join("")}<button class="btn amb mt" onclick="sendAns(TM.tri.map(x=>x??-1))">Valider mon classement</button>`;}
+      h+=`</div><div id="tmsg"></div></div>`;
+    }
+    else if(qp==="buzz"||qp==="buzzed"){
+      const ex=(s.excluded||[]).includes(TM.team);
+      h+=`<div class="qtext">${esc(P.t)}</div><div class="center">`;
+      if(qp==="buzzed")h+=`<div class="verdict ${s.buzzed===TM.team?"ok":"neu"}">${s.buzzed===TM.team?"🎤 À vous ! Répondez à l'oral":"🔴 "+esc(s.teams[s.buzzed].name)+" a buzzé"}</div>`;
+      else h+=`<button class="buzz" id="bzb" ${ex?"disabled":""} onclick="sendBuzz()">${ex?"Exclus sur cette question":"BUZZ"}</button>`;
+      h+=`</div></div>`;
+    }
+    else if(qp==="reveal"){
+      const r=s.results&&s.results[TM.team];
+      if(s.game==="buzz")h+=`<div class="qtext">${esc(P.t)}</div><div class="verdict ${r?"ok":"neu"}">${r?"✔ +150 points !":"Réponse : "+esc(s.correct)}</div>`;
+      else h+=`<div class="qtext">${esc(P.t||P.d)}</div><div class="verdict ${r&&r.ok?"ok":(r&&r.part?"neu":"ko")}">${r&&r.ok?"✔ Bravo !":(r&&r.part?"◐ Presque !":"✘ Raté")} <span style="font-size:30px">+${r?r.pts:0} pts</span></div>${s.correct?`<div class="answer-box">Bonne réponse : ${esc(s.correct)}</div>`:""}`;
+      h+=`</div>`;
+    }
+  } else h+=`<div class="waiting">Regardez l'écran central…</div>`;
+  app().innerHTML=h;
+  if(s.phase==="game"&&s.qphase==="question"&&TM.sent)lockTeam("✔ Réponse envoyée. Regardez l'écran central !");
+  teamTimer();
+}
+function triSet(j,ci){if(TM.sent)return;TM.tri[j]=ci;TM.state.payload.c.forEach((c,k)=>{const b=document.getElementById(`tb${j}_${k}`);if(b)b.classList.toggle("on",k===ci);});}
+
+/* ====================================================================== */
+home();
+</script>
+</body>
+</html>
